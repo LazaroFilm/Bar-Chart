@@ -17,6 +17,7 @@ const drawGraph = async (dataSet) => {
   const json = JSON.parse(dataSet);
 
   const parseTime = d3.timeParse("%Y-%m-%d");
+  // const formatTime = d3.timeFormat("%Y");
 
   const xScale = d3 //
     .scaleTime()
@@ -66,13 +67,14 @@ const drawGraph = async (dataSet) => {
     .attr("y", (d, i) => yScale(d[1]))
     .attr("height", (d, i) => h - yScale(d[1]) - padding)
     .attr("width", 1)
-    .on("mouseover", (d) => {
+    .on("mouseover", (d, i) => {
       tooltip //
         .transition()
         .duration(200)
         .style("opacity", 0.9);
       tooltip //
-        .html(`date: `);
+        .html(i[0])
+        .attr("data-date", i[0]);
       // .style("left", "50 px")
       // .style("top", "50 px");
       // .style("left", d3.event.pageX + "px")
