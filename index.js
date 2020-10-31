@@ -3,44 +3,52 @@ const fetchDataSet = async () => {
     "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json"
   );
   const data = await response.json();
-  // console.log("yay");
   drawGraph(JSON.stringify(data));
-  // console.log(data.id);
 };
 fetchDataSet();
 
-// const dataset = [12, 31, 22, 17, 25, 18, 29, 14, 9];
+// .parse = %Y-m-%d
 
-const w = 900;
-const h = 600;
+const w = 500;
+const h = 400;
 const padding = 50;
 
 const drawGraph = async (dataSet) => {
-  // console.log("drawGraph!");
   const json = JSON.parse(dataSet);
-  // console.log(json.data);
-  const yScale = d3
-    .scaleLinear()
-    .domain([0, d3.max(json.data, (d, i) => i)])
-    .range([h - padding, padding]);
-
+  //! console.log(`${json.data[1][0]}T00:00:00`);
+  //! d3.timeParse(`${d[0]}T00:00:00`)
+  // const xScale = d3; //
+  // .scaleLinear()
+  // .domain([0, d3.max(json.data, (d, i) => i)])
+  // .range([padding, w - padding]);
+  const parseTime = d3.timeParse("%Y-%m-%d");
   const xScale = d3 //
-    .scaleLinear()
-    .domain([0, d3.max(json.data, (d, i) => d[1])])
+    .scaleTime()
+    .domain(d3.extent(json.data, (d) => parseTime(d[0])))
     .range([padding, w - padding]);
 
   const xAxis = d3 //
-    .axisBottom(xScale);
+    .axisBottom()
+    .scale(xScale)
+    .ticks(5);
+  // .ticks(d3.max(json.data, (d, i) => i));
+  // .tickFormat((d, i) => xScale(json.data[i][0]));
+
+  const yScale = d3 //
+    .scaleLinear()
+    .domain([0, d3.max(json.data, (d, i) => d[1])])
+    .range([h - padding, padding]);
+
   const yAxis = d3 //
     .axisLeft(yScale);
 
-  const svg = d3 //
+  const svg = d3 // SVG Box
     .select("body")
     .append("svg")
     .attr("width", w)
     .attr("height", h);
 
-  svg //
+  svg // Bars
     .selectAll("rect")
     .data(json.data)
     .enter()
@@ -49,30 +57,20 @@ const drawGraph = async (dataSet) => {
     .attr("data-date", (d) => d[0])
     .attr("data-gdp", (d) => d[1])
     .attr("fill", "navy")
-    .attr("x", (d) => xScale(d[1]))
-    .attr("y", (d, i) => yScale(i))
+    .attr("x", (d, i) => xScale(parseTime(d[0])))
+    .attr("y", (d, i) => yScale(d[1]))
+    .attr("height", (d, i) => h - yScale(d[1]) - padding)
+    .attr("width", 1);
 
-    .attr("width", 2)
-    .attr("height", (d) => xScale(d[1]));
-
-  // svg // TODO text
-  //   .selectAll("text")
-  //   .data(json.data)
-  //   .enter()
-  //   .append("text")
-  //   .text((d) => d[1])
-  //   .attr("x", (d, i) => xScale(d[1]))
-  //   .attr("y", (d, i) => yScale(i));
-
-  svg //
+  svg // Y Axis
     .append("g")
     .attr("id", "y-axis")
-    .attr("transform", `translate(0, ${h - padding})`)
-    .call(xAxis);
-  svg //
-    .append("g")
-    .attr("id", "x-axis")
     .attr("transform", `translate(${padding}, 0)`)
     .call(yAxis);
+  svg // X Axis
+    .append("g")
+    .attr("id", "x-axis")
+    .attr("transform", `translate(0, ${h - padding})`)
+    .call(xAxis);
   // console.log(`x= ${xScale(d[1])} y= ${yScale(i)}`);
 };
