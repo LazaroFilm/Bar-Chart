@@ -15,13 +15,9 @@ const padding = 50;
 
 const drawGraph = async (dataSet) => {
   const json = JSON.parse(dataSet);
-  //! console.log(`${json.data[1][0]}T00:00:00`);
-  //! d3.timeParse(`${d[0]}T00:00:00`)
-  // const xScale = d3; //
-  // .scaleLinear()
-  // .domain([0, d3.max(json.data, (d, i) => i)])
-  // .range([padding, w - padding]);
+
   const parseTime = d3.timeParse("%Y-%m-%d");
+
   const xScale = d3 //
     .scaleTime()
     .domain(d3.extent(json.data, (d) => parseTime(d[0])))
@@ -31,8 +27,6 @@ const drawGraph = async (dataSet) => {
     .axisBottom()
     .scale(xScale)
     .ticks(5);
-  // .ticks(d3.max(json.data, (d, i) => i));
-  // .tickFormat((d, i) => xScale(json.data[i][0]));
 
   const yScale = d3 //
     .scaleLinear()
@@ -41,6 +35,17 @@ const drawGraph = async (dataSet) => {
 
   const yAxis = d3 //
     .axisLeft(yScale);
+
+  var tooltip = d3 // Tooltip
+    .select("body")
+    .append("div")
+    .attr("id", "tooltip")
+    .style("opacity", 0);
+  // .style("background-color", "white")
+  // .style("border", "solid")
+  // .style("border-width", "1px")
+  // .style("border-radius", "5px")
+  // .style("padding", "10px");
 
   const svg = d3 // SVG Box
     .select("body")
@@ -60,7 +65,25 @@ const drawGraph = async (dataSet) => {
     .attr("x", (d, i) => xScale(parseTime(d[0])))
     .attr("y", (d, i) => yScale(d[1]))
     .attr("height", (d, i) => h - yScale(d[1]) - padding)
-    .attr("width", 1);
+    .attr("width", 1)
+    .on("mouseover", (d) => {
+      tooltip //
+        .transition()
+        .duration(200)
+        .style("opacity", 0.9);
+      tooltip //
+        .html(`date: `);
+      // .style("left", "50 px")
+      // .style("top", "50 px");
+      // .style("left", d3.event.pageX + "px")
+      // .style("top", d3.event.pageY + "px");
+    })
+    .on("mouseout", (d) => {
+      tooltip //
+        .transition()
+        .duration(500)
+        .style("opacity", 0);
+    });
 
   svg // Y Axis
     .append("g")
